@@ -1,20 +1,35 @@
 <?php
-require("../../database/server.php");
+require("../../backend/server.php");
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $id = $_POST['id'];
 
-    // Prepare the SQL statement
+    // Get the image path
+    $sql = "SELECT image FROM products WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $stmt->bind_result($imagePath);
+    $stmt->fetch();
+    $stmt->close();
+
+    // Delete the image file
+    if ($imagePath) {
+        $file = "../../productImage/" . $imagePath;
+        if (file_exists($file)) {
+            unlink($file);
+        }
+    }
+
+    // Delete the product
     $sql = "DELETE FROM products WHERE id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $id);
 
     // Execute the statement
     if ($stmt->execute()) {
-        // Redirect to the manage page with a success message
-        header("Location: ../../view/product.php");
+        header("Location: ../../admin/productList.php");
     } else {
-        // Redirect to the manage page with an error message
         header("Location: manage.php");
     }
 
