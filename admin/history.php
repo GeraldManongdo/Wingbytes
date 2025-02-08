@@ -1,3 +1,4 @@
+
 <?php
 $pageTitle = "History";
 $activePage = "history";

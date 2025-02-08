@@ -1,9 +1,9 @@
 <?php
 // Include the Composer autoload file to load TCPDF from the 'vendor' folder
-require_once('../vendor/autoload.php'); // Adjust this path based on your folder structure
+require_once('../../vendor/autoload.php'); // Adjust this path based on your folder structure
 
 // Database connection (using MySQLi)
-require("../backend/server.php"); // Connect to database
+require("../../backend/server.php"); // Connect to database
 
 if (isset($_GET['order_track_number'])) {
     $order_track_number = $_GET['order_track_number'];

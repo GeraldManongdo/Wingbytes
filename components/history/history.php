@@ -1,3 +1,13 @@
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<?php
+require("../backend/server.php"); // Connect to database
+
+// Fetch order tracking numbers
+$sql = "SELECT MIN(id) AS id, order_track_number, MIN(order_date) AS order_date FROM orders GROUP BY order_track_number";
+$result = $conn->query($sql);
+?>
 <div class="pagetitle">
   <h1>History</h1>
   <nav>
@@ -20,31 +30,34 @@
           <table class="table datatable">
             <thead>
               <tr>
-                <th>Track_Number</th>
+                <th>Track Number</th>
                 <th>Date</th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody>
-              <?php
-              require("../backend/server.php");
-
-              $sql = "SELECT MIN(id) AS id, order_track_number, MIN(order_date) AS order_date FROM orders GROUP BY order_track_number";
-              $result = $conn->query($sql);
-
-              if ($result->num_rows > 0) {
-                while ($row = $result->fetch_assoc()) {
-                  echo "<tr>";
-                  echo "<td>" . htmlspecialchars($row["order_track_number"]) . "</td>";
-                  echo "<td>" . htmlspecialchars($row["order_date"]) . "</td>";
-                  echo "<td><button type='button' class='btn btn-danger' data-bs-toggle='modal' data-bs-target='#deleteModal' data-id='" . htmlspecialchars($row["order_track_number"]) . "'>Delete</button></td>";
-                  echo "</tr>";
-                }
-              } else {
-                echo "<tr><td colspan='3'>No orders found</td></tr>";
-              }
-              $conn->close();
-              ?>
+              <?php if ($result->num_rows > 0): ?>
+                <?php while ($row = $result->fetch_assoc()): ?>
+                  <tr>
+                    <td><?= htmlspecialchars($row["order_track_number"]) ?></td>
+                    <td><?= htmlspecialchars($row["order_date"]) ?></td>
+                    <td>
+                      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#largeModalView"
+                        onclick="showReceipt('<?= htmlspecialchars($row["order_track_number"]) ?>')">
+                        View
+                      </button>
+                      <button type="button" class="btn btn-danger" onclick="showDeleteModal(this)"
+                        data-id="<?= htmlspecialchars($row['order_track_number']) ?>">
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                <?php endwhile; ?>
+              <?php else: ?>
+                <tr>
+                  <td colspan="3" class="text-center">No orders found</td>
+                </tr>
+              <?php endif; ?>
             </tbody>
 
           </table>
@@ -55,6 +68,21 @@
 
     </div>
   </div>
+  <!-- Receipt Modal -->
+  <div class="modal fade" id="largeModalView" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Receipt Information</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="receipt-info">
+          <p class="text-center">Loading receipt details...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="modal fade" id="deleteModal" tabindex="-1">
     <div class="modal-dialog modal-sm">
       <div class="modal-content">
@@ -79,13 +107,25 @@
 
 
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
+  function showDeleteModal(button) {
     var deleteModal = document.getElementById('deleteModal');
-    deleteModal.addEventListener('show.bs.modal', function (event) {
-      var button = event.relatedTarget;
-      var id = button.getAttribute('data-id');
-      var deleteId = deleteModal.querySelector('#deleteId');
-      deleteId.value = id;
+    var id = button.getAttribute('data-id');
+    var deleteId = deleteModal.querySelector('#deleteId');
+    deleteId.value = id;
+    var modal = new bootstrap.Modal(deleteModal);
+    modal.show();
+  }
+  function showReceipt(orderTrackNumber) {
+    $.ajax({
+      url: "../components/history/fetch_receipt.php",
+      type: "GET",
+      data: { order_track_number: orderTrackNumber },
+      success: function (response) {
+        $("#receipt-info").html(response);
+      },
+      error: function () {
+        $("#receipt-info").html("<p class='text-danger'>Error loading receipt details.</p>");
+      }
     });
-  });
+  }
 </script>

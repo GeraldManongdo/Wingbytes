@@ -1,5 +1,5 @@
 <?php
-require("../backend/server.php");
+require("../../backend/server.php");
 
 $orderTrackNumber = $_GET['order_track_number'] ?? '';
 
@@ -31,12 +31,9 @@ foreach ($orders as $order) {
 }
 ?>
 
+
 <div class="receipt">
-    <h3 class="text-center">Store Name</h3>
-    <p class="text-center">Store Corporation</p>
-    <p class="text-center">Store Address</p>
-    <p><strong>OTN:</strong> <?= htmlspecialchars($orderTrackNumber) ?></p>
-    <p><em>This serves as your sales invoice</em></p>
+    <h3 class="text-center"><strong>OTN:</strong> <?= htmlspecialchars($orderTrackNumber) ?></h3>
 
     <table class="table table-bordered">
         <tr>
@@ -69,7 +66,7 @@ foreach ($orders as $order) {
         </tr>
     </table>
 
-    <a href="download_receipt.php?order_track_number=<?= htmlspecialchars($orderTrackNumber) ?>">
+    <a href="../components/history/download_receipt.php?order_track_number=<?= htmlspecialchars($orderTrackNumber) ?>">
         <button class="btn btn-success w-100">Download Receipt (PDF)</button>
     </a>
 </div>
